@@ -1,0 +1,9 @@
+newmtl KidomnimanSG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.20 0.20 0.20
+Tf 1.00 1.00 1.00
+map_Kd 5_sin_título_20250328144237.png
+Ni 1.00
+Ks 1.00 1.00 1.00
+Ns 18.00
