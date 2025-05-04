@@ -25,7 +25,7 @@
 #include"Model.h"
 #include "Skybox.h"
 
-//para iluminaci髇
+//para iluminaci贸n
 #include "CommonValues.h"
 #include "DirectionalLight.h"
 #include "PointLight.h"
@@ -42,10 +42,34 @@ Camera camera;
 //Texturas
 Texture pisoTexture;
 
-Model Kitt_M;
-Model Llanta_M;
-Model Blackhawk_M;
+//Model mesa;
 
+
+//Mundo Finn
+Model Finn;
+Model PIzq;
+Model PDer;
+Model BIzq;
+Model BDer;
+Model Mochila;
+Model Enchiridion;
+Model Topo;
+Model Banca;
+Model Pizza;
+Model Picnic;
+Model Tiro_blanco;
+Model Arco_finn;
+Model Letrero_finn;
+Model Prismo;
+
+
+
+//Mundo Invencible
+Model Regalos;
+Model Bateo;
+Model Nave;
+Model Baloncesto;
+Model Casa_arbol;
 
 Skybox skybox;
 
@@ -72,7 +96,7 @@ static const char* vShader = "shaders/shader_light.vert";
 static const char* fShader = "shaders/shader_light.frag";
 
 
-//funci髇 de calculo de normales por promedio de v閞tices 
+//funci贸n de calculo de normales por promedio de v茅rtices 
 void calcAverageNormals(unsigned int* indices, unsigned int indiceCount, GLfloat* vertices, unsigned int verticeCount,
 	unsigned int vLength, unsigned int normalOffset)
 {
@@ -195,26 +219,70 @@ int main()
 	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 0.5f);
 
 	
-	
-	
+
 	pisoTexture = Texture("Textures/pavimento.tga");
 	pisoTexture.LoadTextureA();
 	
-	Kitt_M = Model();
-	Kitt_M.LoadModel("Models/kitt_optimizado.obj");
-	Llanta_M = Model();
-	Llanta_M.LoadModel("Models/llanta_optimizada.obj");
-	Blackhawk_M = Model();
-	Blackhawk_M.LoadModel("Models/uh60.obj");
+	/*mesa = Model();
+	mesa.LoadModel("Models/Invencible/nave.obj");*/
 	
+	//---------Mundo Finn----------
+	//Finn
+	Finn = Model();
+	Finn.LoadModel("Models/finn/Cuerpo_finn.obj");
+	PIzq = Model();
+	PIzq.LoadModel("Models/finn/PIzq.obj");
+	PDer = Model();
+	PDer.LoadModel("Models/finn/PDer.obj");
+	BIzq = Model();
+	BIzq.LoadModel("Models/finn/BIzq.obj");
+	BDer = Model();
+	BDer.LoadModel("Models/finn/BDer.obj");
+	Mochila = Model();
+	Mochila.LoadModel("Models/finn/mochila.obj");
+	Enchiridion = Model();
+	Enchiridion.LoadModel("Models/finn/enchiridion.obj");
+	Topo = Model();
+	Topo.LoadModel("Models/finn/topo.obj");
+	Banca = Model();
+	Banca.LoadModel("Models/finn/Banca.obj");
+	Pizza = Model();
+	Pizza.LoadModel("Models/finn/pizza.obj");
+	Picnic = Model();
+	Picnic.LoadModel("Models/finn/picnic.obj");
+	Tiro_blanco = Model();
+	Tiro_blanco.LoadModel("Models/finn/tiro_al_blanco.obj");
+	Arco_finn = Model();
+	Arco_finn.LoadModel("Models/finn/arco_opt.obj");
+	Letrero_finn = Model();
+	Letrero_finn.LoadModel("Models/finn/Letrero.obj");
+	Prismo = Model();
+	Prismo.LoadModel("Models/finn/prismo.obj");
 
+
+
+
+	//---------Mundo Invencible----------
+	//Mark
+	Regalos = Model();
+	Regalos.LoadModel("Models/Invencible/regalos.obj");
+	Bateo = Model();
+	Bateo.LoadModel("Models/Invencible/bateo.obj");
+	Nave = Model();
+	Nave.LoadModel("Models/Invencible/nave.obj");
+	Baloncesto = Model();
+	Baloncesto.LoadModel("Models/Invencible/baloncesto.obj");
+	Casa_arbol = Model();
+	Casa_arbol.LoadModel("Models/Invencible/casa_eve.obj");
+
+	//Skybox
 	std::vector<std::string> skyboxFaces;
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_rt.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_lf.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_dn.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_up.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_bk.tga");
-	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_ft.tga");
+	skyboxFaces.push_back("Textures/field/posx.jpg"); //right
+	skyboxFaces.push_back("Textures/field/negx.jpg"); //left
+	skyboxFaces.push_back("Textures/field/negy.jpg"); //bottom
+	skyboxFaces.push_back("Textures/field/posy.jpg"); //top
+	skyboxFaces.push_back("Textures/field/posz.jpg"); //back
+	skyboxFaces.push_back("Textures/field/negz.jpg"); //front
 
 	skybox = Skybox(skyboxFaces);
 
@@ -222,13 +290,13 @@ int main()
 	Material_opaco = Material(0.3f, 4);
 
 
-	//luz direccional, s髄o 1 y siempre debe de existir
+	//luz direccional, s贸lo 1 y siempre debe de existir
 	mainLight = DirectionalLight(1.0f, 1.0f, 1.0f,
 		0.3f, 0.3f,
 		0.0f, 0.0f, -1.0f);
 	//contador de luces puntuales
 	unsigned int pointLightCount = 0;
-	//Declaraci髇 de primer luz puntual
+	//Declaraci贸n de primer luz puntual
 	pointLights[0] = PointLight(1.0f, 0.0f, 0.0f,
 		0.0f, 1.0f,
 		-6.0f, 1.5f, 1.5f,
@@ -284,7 +352,7 @@ int main()
 		uniformEyePosition = shaderList[0].GetEyePositionLocation();
 		uniformColor = shaderList[0].getColorLocation();
 		
-		//informaci髇 en el shader de intensidad especular y brillo
+		//informaci贸n en el shader de intensidad especular y brillo
 		uniformSpecularIntensity = shaderList[0].GetSpecularIntensityLocation();
 		uniformShininess = shaderList[0].GetShininessLocation();
 
@@ -292,13 +360,13 @@ int main()
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
 		glUniform3f(uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
 
-		// luz ligada a la c醡ara de tipo flash
-		//sirve para que en tiempo de ejecuci髇 (dentro del while) se cambien propiedades de la luz
+		// luz ligada a la c谩mara de tipo flash
+		//sirve para que en tiempo de ejecuci贸n (dentro del while) se cambien propiedades de la luz
 			glm::vec3 lowerLight = camera.getCameraPosition();
 		lowerLight.y -= 0.3f;
 		spotLights[0].SetFlash(lowerLight, camera.getCameraDirection());
 
-		//informaci髇 al shader de fuentes de iluminaci髇
+		//informaci贸n al shader de fuentes de iluminaci贸n
 		shaderList[0].SetDirectionalLight(&mainLight);
 		shaderList[0].SetPointLights(pointLights, pointLightCount);
 		shaderList[0].SetSpotLights(spotLights, spotLightCount);
@@ -311,7 +379,7 @@ int main()
 
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(0.0f, -1.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(30.0f, 1.0f, 30.0f));
+		model = glm::scale(model, glm::vec3(8.0f, 1.0f, 8.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
 
@@ -320,65 +388,187 @@ int main()
 
 		meshList[2]->RenderMesh();
 
-		////Instancia del coche 
-		//model = glm::mat4(1.0);
-		//model = glm::translate(model, glm::vec3(0.0f + mainWindow.getmuevex(), 0.5f, -3.0f));
-		//modelaux = model;
-		//model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-		//model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		//glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		//Kitt_M.RenderModel();
 
-		////Llanta delantera izquierda
-		//model = modelaux;
-		//model = glm::translate(model, glm::vec3(7.0f, -0.5f, 8.0f));
-		//model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		//model = glm::scale(model, glm::vec3(0.4f, 0.4f, 0.4f));
-		//color = glm::vec3(0.5f, 0.5f, 0.5f);//llanta con color gris
-		//glUniform3fv(uniformColor, 1, glm::value_ptr(color));
-		//glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		//Llanta_M.RenderModel();
 
-		////Llanta trasera izquierda
-		//model = modelaux;
-		//model = glm::translate(model, glm::vec3(15.5f, -0.5f, 8.0f));
-		//model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		//model = glm::scale(model, glm::vec3(0.4f, 0.4f, 0.4f));
-		//glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		//Llanta_M.RenderModel();
-
-		////Llanta delantera derecha
-		//model = modelaux;
-		//model = glm::translate(model, glm::vec3(7.0f, -0.5f, 1.5f));
-		//model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		//model = glm::scale(model, glm::vec3(0.4f, 0.4f, 0.4f));
-		//glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		//Llanta_M.RenderModel();
-
-		////Llanta trasera derecha
-		//model = modelaux;
-		//model = glm::translate(model, glm::vec3(15.5f, -0.5f, 1.5f));
-		//model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		//model = glm::scale(model, glm::vec3(0.4f, 0.4f, 0.4f));
-		//glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		//Llanta_M.RenderModel();
-	
-
-		//model = glm::mat4(1.0);
-		//model = glm::translate(model, glm::vec3(0.0f, 5.0f, 6.0));
+		//---------------Mundo Finn---------
+		//---------------Finn----------------
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(0.0f ,-1.0f, -3.0f + mainWindow.getmuevex()));
+		modelaux = model;
+		model = glm::translate(model, glm::vec3(0.0f, 3.688f, 0.0f));
 		//model = glm::scale(model, glm::vec3(0.3f, 0.3f, 0.3f));
-		//model = glm::rotate(model, -90 * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
-		//model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
-		//glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		//Blackhawk_M.RenderModel();
+		//model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Finn.RenderModel();
 
+
+		////Mochila
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(-0.058f, 3.94f, -0.832f));
+		/*model = glm::rotate(model, 90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.4f, 0.4f, 0.4f));*/
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Mochila.RenderModel();
+
+		////B Izquierdo
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(0.747f, 4.092f, 0.0f));
+		/*model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.4f, 0.4f, 0.4f));*/
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		BIzq.RenderModel();
+
+		////B Derecha
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(-0.84f, 4.085f, 0.0f));
+		/*model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.4f, 0.4f, 0.4f));*/
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		BDer.RenderModel();
+
+		////Pierna Izquierda
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(0.658f, 1.99f, 0.002f));
+		/*model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.4f, 0.4f, 0.4f));*/
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		PIzq.RenderModel();
+
+		////Pierna Derecha
+		model = modelaux;
+		model = glm::translate(model, glm::vec3(-0.772f, 2.035f, 0.0f));
+		/*model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.4f, 0.4f, 0.4f));*/
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		PDer.RenderModel();
+
+		
+		//Libro Enchiridion
+		model = glm::mat4(1.0);
+
+		//Ajuste del libro
+		model = glm::translate(model, glm::vec3(37.519f, -1.0f, 60.969f));
+		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Enchiridion.RenderModel();
+
+		//Golpear el Topo
+		model = glm::mat4(1.0);
+
+		//Ajuste del topo
+		model = glm::translate(model, glm::vec3(52.347f, -1.0f, 62.901f));
+		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Topo.RenderModel();
+
+		//Banca 
+		model = glm::mat4(1.0);
+
+		//Ajuste de la banca
+		model = glm::translate(model, glm::vec3(66.509f, -1.0f, 60.573f));
+		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Banca.RenderModel();
+
+	
+		//Puesto de pizzas 
+		model = glm::mat4(1.0);
+
+		//Ajuste del puesto
+		model = glm::translate(model, glm::vec3(66.018f, -1.0f, 47.256f));
+		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Pizza.RenderModel();
+		
+
+		//Mesa de picnic 
+		model = glm::mat4(1.0);
+
+		//Ajuste de la mesa
+		model = glm::translate(model, glm::vec3(65.959f, -1.0f, 33.766f));
+		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Picnic.RenderModel();
+
+
+		//Tiro al blanco
+		model = glm::mat4(1.0);
+
+		//Ajuste del juego
+		model = glm::translate(model, glm::vec3(52.694f, -1.0f, 31.625f));
+		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Tiro_blanco.RenderModel();
+
+
+		//Arco finn
+		model = glm::mat4(1.0);
+
+		//Ajuste del arco
+		model = glm::translate(model, glm::vec3(35.921f, -1.0f, 34.418f));
+		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Arco_finn.RenderModel();
+
+		//Letrero finn
+		model = glm::mat4(1.0);
+
+		//Ajuste del letrero
+		model = glm::translate(model, glm::vec3(35.948f, -1.0f, 34.473f));
+		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Letrero_finn.RenderModel();
+
+		//Prismo
+		model = glm::mat4(1.0);
+
+		//Ajuste de prismo
+		model = glm::translate(model, glm::vec3(38.323f, -1.0f, 47.789f));
+		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Prismo.RenderModel();
+
+
+
+
+
+
+
+
+
+
+
+
+		//-------------Mundo Invencible---------
+		//Nave vitrumita
+		model = glm::mat4(1.0);
+
+		//Ajuste de la nave
+		model = glm::translate(model, glm::vec3(-0.772f, 2.035f, 0.0f));
+		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Nave.RenderModel();
+
+
+
+	
 		
 		
 		//blending: transparencia o traslucidez
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[3]->RenderMesh();
+		//Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		//meshList[3]->RenderMesh();
 		glDisable(GL_BLEND);
 
 		glUseProgram(0);
