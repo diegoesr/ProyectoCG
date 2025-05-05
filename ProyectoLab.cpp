@@ -41,9 +41,9 @@ Camera camera;
 
 //Texturas
 Texture pisoTexture;
-
-//Model mesa;
-
+//Textura piso finn
+Texture pisoFinn;
+Texture pisoInvencible;
 
 //Mundo Finn
 Model Finn;
@@ -219,12 +219,13 @@ int main()
 	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -60.0f, 0.0f, 0.3f, 0.5f);
 
 	
-
+	//---------Texturas------------
 	pisoTexture = Texture("Textures/pavimento.tga");
 	pisoTexture.LoadTextureA();
-	
-	/*mesa = Model();
-	mesa.LoadModel("Models/Invencible/nave.obj");*/
+	pisoFinn = Texture("Textures/piso.png");
+	pisoFinn.LoadTextureA();
+	pisoInvencible = Texture("Textures/piso_invencible.png");
+	pisoInvencible.LoadTextureA();
 	
 	//---------Mundo Finn----------
 	//Finn
@@ -277,12 +278,12 @@ int main()
 
 	//Skybox
 	std::vector<std::string> skyboxFaces;
-	skyboxFaces.push_back("Textures/field/posx.jpg"); //right
-	skyboxFaces.push_back("Textures/field/negx.jpg"); //left
-	skyboxFaces.push_back("Textures/field/negy.jpg"); //bottom
-	skyboxFaces.push_back("Textures/field/posy.jpg"); //top
-	skyboxFaces.push_back("Textures/field/posz.jpg"); //back
-	skyboxFaces.push_back("Textures/field/negz.jpg"); //front
+	skyboxFaces.push_back("Textures/bosque/posx.jpg"); //right
+	skyboxFaces.push_back("Textures/bosque/negx.jpg"); //left
+	skyboxFaces.push_back("Textures/bosque/negy.jpg"); //bottom
+	skyboxFaces.push_back("Textures/bosque/posy.jpg"); //top
+	skyboxFaces.push_back("Textures/bosque/posz.jpg"); //back
+	skyboxFaces.push_back("Textures/bosque/negz.jpg"); //front
 
 	skybox = Skybox(skyboxFaces);
 
@@ -372,6 +373,7 @@ int main()
 		shaderList[0].SetSpotLights(spotLights, spotLightCount);
 
 
+		//----------------Texturas de los pisos-------------
 		//Piso
 		glm::mat4 model(1.0);
 		glm::mat4 modelaux(1.0);
@@ -387,6 +389,42 @@ int main()
 		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
 
 		meshList[2]->RenderMesh();
+
+		//Piso finn
+		model= glm::mat4(1.0);
+		modelaux= glm::mat4(1.0);
+		color = glm::vec3(1.0f, 1.0f, 1.0f);
+
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(53.402f, -0.98f, 40.0f));
+		model = glm::scale(model, glm::vec3(2.5f, 2.5f, 3.495f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+
+		pisoFinn.UseTexture();
+		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
+
+		meshList[2]->RenderMesh();
+
+
+		//Piso Invencible
+		model = glm::mat4(1.0);
+		modelaux = glm::mat4(1.0);
+		color = glm::vec3(1.0f, 1.0f, 1.0f);
+
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(53.402f, -0.98f, -40.0f));
+		model = glm::scale(model, glm::vec3(2.5f, 2.5f, 3.495f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniform3fv(uniformColor, 1, glm::value_ptr(color));
+
+		pisoInvencible.UseTexture();
+		Material_opaco.UseMaterial(uniformSpecularIntensity, uniformShininess);
+
+		meshList[2]->RenderMesh();
+
+
+
 
 
 
@@ -447,7 +485,7 @@ int main()
 		model = glm::mat4(1.0);
 
 		//Ajuste del libro
-		model = glm::translate(model, glm::vec3(37.519f, -1.0f, 60.969f));
+		model = glm::translate(model, glm::vec3(33.996f, -1.0f, 60.969f));
 		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
@@ -467,7 +505,7 @@ int main()
 		model = glm::mat4(1.0);
 
 		//Ajuste de la banca
-		model = glm::translate(model, glm::vec3(66.509f, -1.0f, 60.573f));
+		model = glm::translate(model, glm::vec3(70.148f, -1.0f, 60.573f));
 		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
@@ -489,7 +527,7 @@ int main()
 		model = glm::mat4(1.0);
 
 		//Ajuste de la mesa
-		model = glm::translate(model, glm::vec3(65.959f, -1.0f, 33.766f));
+		model = glm::translate(model, glm::vec3(69.657f, -1.0f, 27.955f));
 		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
@@ -500,7 +538,7 @@ int main()
 		model = glm::mat4(1.0);
 
 		//Ajuste del juego
-		model = glm::translate(model, glm::vec3(52.694f, -1.0f, 31.625f));
+		model = glm::translate(model, glm::vec3(52.694f, -1.0f, 23.692f));
 		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
@@ -511,7 +549,7 @@ int main()
 		model = glm::mat4(1.0);
 
 		//Ajuste del arco
-		model = glm::translate(model, glm::vec3(35.921f, -1.0f, 34.418f));
+		model = glm::translate(model, glm::vec3(32.398f, -1.0f, 26.486f));
 		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
@@ -521,7 +559,7 @@ int main()
 		model = glm::mat4(1.0);
 
 		//Ajuste del letrero
-		model = glm::translate(model, glm::vec3(35.948f, -1.0f, 34.473f));
+		model = glm::translate(model, glm::vec3(32.426f, -1.0f, 26.541f));
 		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
@@ -531,18 +569,11 @@ int main()
 		model = glm::mat4(1.0);
 
 		//Ajuste de prismo
-		model = glm::translate(model, glm::vec3(38.323f, -1.0f, 47.789f));
+		model = glm::translate(model, glm::vec3(33.996f, -1.0f, 47.936f));
 		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Prismo.RenderModel();
-
-
-
-
-
-
-
 
 
 
@@ -553,17 +584,69 @@ int main()
 		model = glm::mat4(1.0);
 
 		//Ajuste de la nave
-		model = glm::translate(model, glm::vec3(-0.772f, 2.035f, 0.0f));
+		model = glm::translate(model, glm::vec3(34.8f, -1.0f, -20.219f));
 		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Nave.RenderModel();
 
 
+		//Puesto de regalos
+		model = glm::mat4(1.0);
 
-	
+		//Ajuste de la nave
+		model = glm::translate(model, glm::vec3(54.313f, -1.0f, -17.491f));
+		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Regalos.RenderModel();
+
+
+		//Jaula de bateo
+		model = glm::mat4(1.0);
+
+		//Ajuste de la jaula
+		model = glm::translate(model, glm::vec3(66.804f, -1.0f, -37.29f));
+		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Bateo.RenderModel();
 		
+
+		//Juego de baloncesto
+		model = glm::mat4(1.0);
+
+		//Ajuste del juego
+		model = glm::translate(model, glm::vec3(54.313f, -1.0f, -60.732f));
+		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Baloncesto.RenderModel();
+
+		//Casa de eve
+		model = glm::mat4(1.0);
+
+		//Ajuste de la casa
+		model = glm::translate(model, glm::vec3(34.8f, -1.0f, -60.732f));
+		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Casa_arbol.RenderModel();
+
 		
+		//Mesa de picnic 
+		model = glm::mat4(1.0);
+
+		//Ajuste de la mesa
+		model = glm::translate(model, glm::vec3(47.498f, -1.0f, -40.246f));
+		//model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Picnic.RenderModel();
+
+
+
+
 		//blending: transparencia o traslucidez
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
