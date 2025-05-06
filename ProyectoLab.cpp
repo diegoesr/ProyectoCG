@@ -1,4 +1,4 @@
-//Borrador de proyecto
+﻿//Borrador de proyecto
 #define STB_IMAGE_IMPLEMENTATION
 
 #include <stdio.h>
