@@ -109,22 +109,57 @@ bool esDeDia;							//Verificar si es de dia
 
 
 //Animacion Doctor-Perry
-// Variables para la animación
+
 float velocidadAnimacion = 0.1f; // Velocidad general
 float distanciaRecorrida = 0.0f; // Para controlar el desplazamiento
-const float distanciaMaxima = 200.0f; // Límite del recorrido
+float distanciaMaxima = 200.0f; // Límite del recorrido
 bool avanzando = true; // Dirección del movimiento
+float rotacionPersonajes; // Rotación inicial (90 grados)
 
 // Animación del caminar
 float faseDoctor = 0.0f;
 float fasePerry = glm::pi<float>();
-const float velocidadPasos = 2.5f;
-const float amplitudPiernasDoctor = 10.0f;
-const float amplitudBrazosDoctor = 6.0f;
-const float amplitudPiernasPerry = 7.0f;
-const float amplitudBrazosPerry = 8.0f;
+float velocidadPasos = 0.2f;
+float amplitudPiernasDoctor = 0.09f;
+float amplitudBrazosDoctor = 0.9f;
+float amplitudPiernasPerry = 0.9f;
+float amplitudBrazosPerry = 0.9;
 
+//Animacion para DADOS
+float animDurationDados = 0.2f;
+float velocidadRotacion = 90.0f;  //  Una rotación más controlada
+float alturaMaxima = 1.5f;        // Salto más pequeño
 
+// Posiciones fijas de los dados sobre la mesa (ajustadas para que estén centradas)
+const glm::vec3 posDado1 = glm::vec3(-113.755f, 0.0f, -400.0f);
+const glm::vec3 posDado2 = glm::vec3(-113.755f, 0.0f, -400.0f);
+
+// Rotaciones finales
+static glm::vec3 rotFinalDado1 = glm::vec3(0.0f);
+static glm::vec3 rotFinalDado2 = glm::vec3(0.0f);
+float animTimeDados = 0.0f;    // Tiempo acumulado de animación
+float alturaDados = 0.0f;
+
+//Animacion para Phineas
+float animTimePhineas = 0.0f;
+float animDurationPhineas = 30.0f; // Duración de un ciclo completo (2 segundos)
+float alturaMaximaPhineas = 1.0f; // Altura máxima del salto
+float rotacionBrazo = 0.0f; // Rotación del brazo para saludar
+
+// Animación del humo
+float humoTime = 0.0f;
+float humoDuration = 80.0f; // Duración de un ciclo completo de humo
+float humoScale = 12.0f; // Escala inicial del humo
+float humoMaxScale = 12.0f; // Escala máxima del humo
+float humoHeight = 90.0f; // Altura inicial del humo
+float humoMaxHeight = 90.0f; // Altura máxima del humo
+float humoOpacity = 0.7f; // Opacidad inicial
+
+// Animación burbuja de diálogo
+float burbujaTime = 0.0f;
+float burbujaDuration = 30.0f; // Duración de un ciclo completo
+float burbujaOffsetY = 0.0f; // Desplazamiento vertical para efecto de flotación
+float burbujaMaxOffset = 0.2f; // Máximo desplazamiento vertical
 
 
 Window mainWindow;
@@ -142,6 +177,8 @@ Texture pisoFinn;
 Texture pisoInvencible;
 Texture pisoBob;
 Texture pisoPhineas;
+Texture HumoTexture;
+Texture FrasePhineas;
 //Modelos a utilizar en entorno opengl
 
 //Mundo Finn
@@ -216,6 +253,13 @@ Model PiernaD_Perry;
 Model PiernaI_Perry;
 Model BrazoD_Perry;
 Model BrazoI_Perry;
+Model Cuerpo_ferb;
+Model Brazode_ferb;
+Model Brazoizq_ferb;
+Model Pieder_ferb;
+Model Pieizq_ferb;
+Model Arbol;
+
 
 
 //Objetos
@@ -383,6 +427,20 @@ void CreateObjects()
 		0.0f, 0.5f, -0.5f,		0.0f, 1.0f,		0.0f, 0.0f, 0.0f,
 	};
 
+	unsigned int dialogoIndices[] = {
+   0, 1, 2,
+   0, 2, 3,
+  
+	};
+
+	GLfloat dialogoVertices[] = {
+		-0.5f, -0.5f, 0.0f,		0.0f, 0.0f,		0.0f, 0.0f, 0.0f,
+		0.5f, -0.5f, 0.0f,		1.0f, 0.0f,		0.0f, 0.0f, 0.0f,
+		0.5f, 0.5f, 0.0f,		1.0f, 1.0f,		0.0f, 0.0f, 0.0f,
+		-0.5f, 0.5f, 0.0f,		0.0f, 1.0f,		0.0f, 0.0f, 0.0f
+	};
+
+	
 	Mesh* obj1 = new Mesh();
 	obj1->CreateMesh(vertices, indices, 32, 12);
 	meshList.push_back(obj1);
@@ -403,9 +461,16 @@ void CreateObjects()
 	obj5->CreateMesh(floorVerticesM, floorIndicesM, 32, 6);
 	meshList.push_back(obj5);
 
+	Mesh* obj6 = new Mesh();
+	obj6->CreateMesh(dialogoVertices, dialogoIndices, 32, 6);
+	meshList.push_back(obj6);
+
+
 	calcAverageNormals(indices, 12, vertices, 32, 8, 5);
 
 	calcAverageNormals(vegetacionIndices, 12, vegetacionVertices, 64, 8, 5);
+
+
 
 }
 
@@ -440,6 +505,10 @@ int main()
 	pisoBob.LoadTextureA();
 	pisoPhineas = Texture("Textures/piso_phineas.png");
 	pisoPhineas.LoadTextureA();
+	HumoTexture = Texture("Textures/humo.png");
+	HumoTexture.LoadTextureA();
+	FrasePhineas = Texture("Textures/phineas_frase.png");
+	FrasePhineas.LoadTextureA();
 
 	//********************************CARGA DE MODELOS*************************************
 	//Objetos
@@ -707,8 +776,18 @@ int main()
 	BrazoD_Perry.LoadModel("Models/Phineas/Brazo_derechoPerry.obj");
 	BrazoI_Perry = Model();
 	BrazoI_Perry.LoadModel("Models/Phineas/Brazo_izquierdoPerry.obj");
-
-	
+	Cuerpo_ferb= Model();
+	Cuerpo_ferb.LoadModel("Models/Phineas/Ferb_Cuerpo.obj");
+	Brazode_ferb = Model();
+	Brazode_ferb.LoadModel("Models/Phineas/Brazo_derechoFerb.obj");
+	Brazoizq_ferb = Model();
+	Brazoizq_ferb.LoadModel("Models/Phineas/Brazo_izquierdoFerb.obj");
+	Pieder_ferb = Model();
+	Pieder_ferb.LoadModel("Models/Phineas/Pie_derechoFerb.obj");
+	Pieizq_ferb = Model();
+	Pieizq_ferb.LoadModel("Models/Phineas/Pie_izquierdoFerb.obj");
+	Arbol = Model();
+	Arbol.LoadModel("Models/Phineas/arbol.obj");
 	
 	std::vector<std::string> skyboxFaces;
 	std::vector<std::string> skyboxFaces2;
@@ -762,6 +841,7 @@ int main()
 	pointLightCount++;
 
 
+
 	//LUCES SPOTLIGHT
 	//Contador de luces spotlight
 	unsigned int spotLightCount = 0;
@@ -775,15 +855,15 @@ int main()
 		1.0f, 0.0003f, 0.0002f,
 		15.0f);
 	spotLightCount++;
-	//*********************************+***LUZ DEL VOCHO*************************************
-	spotLights[1] = SpotLight(1.0f, 1.0f, 0.3f,
+	//*********************************+***LUZ DEL Puesto de Peluches*************************************
+	spotLights[1] = SpotLight(1.0f, 0.843f, 0.6f,
 		1.0f, 2.0f,
 		0.0f, 0.0f, 0.0f,
-		1.0f, 0.0f, 0.0f,
+		0.0f, -1.0f, 0.0f,
 		1.0f, 0.0003f, 0.0002f,
-		15.0f);
+		30.0f);
 	spotLightCount++;
-	//*********************************+***LUZ DEL VOCHO*************************************
+	//*********************************+***LUZ DE La moto*************************************
 	spotLights[2] = SpotLight(1.0f, 0.3f, 0.3f,
 		1.0f, 2.0f,
 		0.0f, 0.0f, 0.0f,
@@ -1019,24 +1099,98 @@ int main()
 				prendeLuzMoto = true;
 			}
 		}
-		
-		float desplazamiento = velocidadAnimacion * 15.0f * deltaTime;
+
+		//Animacion Doctor_Perry
+		float desplazamiento = velocidadAnimacion * 10.0f * deltaTime;
 
 		if (avanzando) {
 			distanciaRecorrida += desplazamiento;
 			if (distanciaRecorrida >= distanciaMaxima) {
 				avanzando = false;
+				rotacionPersonajes += 180.0f;
 			}
 		}
 		else {
 			distanciaRecorrida -= desplazamiento;
 			if (distanciaRecorrida <= 0.0f) {
 				avanzando = true;
+				rotacionPersonajes -= 180.0f; 
 			}
 		}
 
 		faseDoctor += velocidadAnimacion * velocidadPasos * deltaTime;
 		fasePerry += velocidadAnimacion * velocidadPasos * deltaTime;
+		
+
+		//Animacion Dados
+		if (mainWindow.animacionDadosActiva) {
+			animTimeDados += deltaTime;
+
+			if (animTimeDados <= animDurationDados) {
+				float progress = animTimeDados / animDurationDados;
+
+				// Movimiento vertical suave 
+				alturaDados = sin(progress * 3.14159265f) * alturaMaxima;
+			}
+			else {
+				// Finalizar animación
+				mainWindow.animacionDadosActiva = false;
+				animTimeDados = 0.0f;
+				alturaDados = -1.0f;  // Volver a la altura de la mesa
+
+				// Rotaciones finales aleatorias (múltiplos de 90°)
+				rotFinalDado1.x = 0.0f;                    // Sin rotación en X
+				rotFinalDado1.y = 90.0f * (rand() % 4);    // Rotación en Y 
+				rotFinalDado1.z = 0.0f;                    // Sin rotación en Z
+
+				rotFinalDado2.x = 0.0f;
+				rotFinalDado2.y = 90.0f * (rand() % 4);
+				rotFinalDado2.z = 0.0f;
+			}
+		}
+
+		//Caminata Phineas
+
+		animTimePhineas += deltaTime;
+		if (animTimePhineas > animDurationPhineas) {
+			animTimePhineas -= animDurationPhineas; // Mantiene la suavidad al reiniciar
+		}
+
+		// Calcular progreso normalizado 
+		float progress = animTimePhineas / animDurationPhineas;
+
+		// Movimiento de salto 
+		float alturaPhineas = sin(progress * 3.14159265f) * alturaMaximaPhineas;
+
+		// Rotación del brazo 
+		rotacionBrazo = 45.0f * sin(progress * 2 * 3.14159265f); // Saludar dos veces por ciclo
+
+		//Animacion Humo
+		humoTime += deltaTime;
+		if (humoTime > humoDuration) {
+			humoTime = 0.0f;
+		}
+
+		float humoProgress = humoTime / humoDuration;
+
+		// Interpolación no lineal 
+		humoScale = humoMaxScale * (1.0f - pow(1.0f - humoProgress, 2.0f));
+		humoHeight = humoMaxHeight * humoProgress;
+		humoOpacity = 0.7f * (1.0f - humoProgress * 0.8f); // El humo se desvanece
+
+
+
+		// Animación de flotación de la burbuja
+
+		burbujaTime += deltaTime;
+		if (burbujaTime > burbujaDuration) {
+			burbujaTime = 0.0f;
+		}
+
+		burbujaOffsetY = sin(burbujaTime * 2.0f * 3.14159265f / burbujaDuration) * burbujaMaxOffset;
+
+
+		
 		//Recibir eventos del usuario
 		glfwPollEvents();
 
@@ -1135,10 +1289,10 @@ int main()
 
 		//Luces del Vocho
 		if (dirVoch) {
-			spotLights[1].SetFlash(glm::vec3(movVoch - 366.0f, 3.0f, -42.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+			spotLights[1].SetFlash(glm::vec3(-113.755f, 40.0f, -250.0f), glm::vec3(0.0f, -1.0f, 0.0f));
 		}
 		else {
-			spotLights[1].SetFlash(glm::vec3(movVoch - 346.0f, 3.0f, -42.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+			spotLights[1].SetFlash(glm::vec3(-113.755f, 40.0f, -250.0f), glm::vec3(0.0f, -1.0f, 0.0f));
 		}
 
 		//Luces la moto
@@ -1157,20 +1311,58 @@ int main()
 
 		//informaci�n al shader de fuentes de iluminaci�n
 		shaderList[0].SetDirectionalLight(&mainLight);
-		if (mainWindow.getOrbePrendido()) {
-			shaderList[0].SetPointLights(pointLights, pointLightCount);
-		}
-		else {
-			shaderList[0].SetPointLights(pointLights, pointLightCount - 1);
+
+		int activePointLights = pointLightCount; // Inicialmente todas activas
+
+		// Si el orbe está apagado, descontar 1 (asumiendo que el orbe es el último en el array)
+		if (!mainWindow.getOrbePrendido()) {
+			activePointLights--;
 		}
 
-		if (prendeLuzMoto == true) {
-			shaderList[0].SetSpotLights(spotLights, spotLightCount);
+		// Si es de día, desactivar las otras luces puntuales (excepto el orbe)
+		if (esDeDia) {
+		
+			// Para mantener solo el orbe (si está prendido) y apagar las demás
+			if (mainWindow.getOrbePrendido()) {
+				activePointLights = 1; // Solo el orbe
+				// Necesitamos crear un array temporal con solo el orbe
+				PointLight tempLights[1];
+				tempLights[0] = pointLights[2]; // Copiar solo el orbe
+				shaderList[0].SetPointLights(tempLights, 1);
+			}
+			else {
+				shaderList[0].SetPointLights(pointLights, 0); // Todas apagadas
+			}
 		}
 		else {
-			shaderList[0].SetSpotLights(spotLights, spotLightCount - 1);
+			// Noche - usar la lógica normal considerando el orbe
+			if (mainWindow.getOrbePrendido()) {
+				shaderList[0].SetPointLights(pointLights, pointLightCount); // Todas
+			}
+			else {
+				shaderList[0].SetPointLights(pointLights, pointLightCount - 1); // Todas menos el orbe
+			}
 		}
 
+		// Array temporal para luces activas
+		SpotLight activeSpots[MAX_SPOT_LIGHTS];
+		int activeSpotCount = 0;
+
+		if (!esDeDia) {  // Noche
+			// 1. Luz del bus (siempre activa de noche)
+			activeSpots[activeSpotCount++] = spotLights[0];
+
+			// 2. Luz del puesto de peluches
+			activeSpots[activeSpotCount++] = spotLights[1];
+
+			// 3. Luz de la moto (solo si está encendida)
+			if (prendeLuzMoto) {
+				activeSpots[activeSpotCount++] = spotLights[2];
+			}
+		}
+
+		// Pasar al shader
+		shaderList[0].SetSpotLights(activeSpots, activeSpotCount);
 
 		glm::mat4 model(1.0);
 		glm::mat4 modelaux(1.0);
@@ -1771,11 +1963,19 @@ int main()
 
 
 		//****************************************************MundoPhineas**************************************************************************
+			//---------------Arbol---------
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(-200.0f, -23.0f, -300.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0));
+		//model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Arbol.RenderModel();
+
 		//---------------Phineas---------
 
 		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(0.0f, -0.8f, -3.0f));
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+		model = glm::translate(model, glm::vec3(-220.0, 0.0f + alturaPhineas, -200.0f));
+		model = glm::scale(model, glm::vec3(0.9f, 0.9f, 0.9f));
 		modelaux = model;
 		//model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
@@ -1783,11 +1983,13 @@ int main()
 
 		//---------------Phineas brazo derecho---------
 		model = modelaux;
+		model = glm::rotate(model, rotacionBrazo * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Phineas_BrazoDerecho.RenderModel();
 
 		//---------------Phineas brazo izquierdo---------
 		model = modelaux;
+		model = glm::rotate(model, rotacionBrazo * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Phineas_BrazoIzquierdo.RenderModel();
 
@@ -1802,6 +2004,70 @@ int main()
 		model = modelaux;
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Phineas_PiernaIzquierda.RenderModel();
+
+		//--------------- Burbuja de diálogo de Phineas ---------
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		model = glm::mat4(1.0);
+		
+		model = glm::translate(model, glm::vec3(
+			-215.0f, // A la derecha de Phineas
+			 alturaPhineas + 25.0f + burbujaOffsetY, // Por encima de su cabeza
+			-200.0f)); // Un poco hacia la cámara
+
+		model = glm::scale(model, glm::vec3(11.0f, 11.0f, 11.0f)); // Ajusta la forma de la burbuja
+
+	
+		model = glm::rotate(model, sin(burbujaTime * 3.14159265f / burbujaDuration) * 5.0f * toRadians,
+			glm::vec3(0.0f, 0.0f, 1.0f));
+
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniform3f(uniformColor, 1.0f, 1.0f, 1.0f); // Color blanco
+		glUniform1f(uniformSpecularIntensity, 0.3f); // Un poco de brillo
+		glUniform1f(uniformShininess, 8.0f);
+
+		FrasePhineas.UseTexture();
+		meshList[5]->RenderMesh(); 
+
+		glDisable(GL_BLEND);
+
+
+		//---------------FERB---------
+
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(10.0f, 9.0f, -370.0f));
+		model = glm::scale(model, glm::vec3(14.0f, 14.0f, 14.0f));
+		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		modelaux = model;
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Cuerpo_ferb.RenderModel();
+
+		//---------------FERB brazo derecho---------
+		model = modelaux;
+
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		model = glm::rotate(model, rotacionBrazo * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		Brazode_ferb.RenderModel();
+
+		//---------------FERB brazo izquierdo---------
+		model = modelaux;
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		model = glm::rotate(model, rotacionBrazo * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		Brazoizq_ferb.RenderModel();
+
+
+		//--------------FERB Pierna derecha---------
+		model = modelaux;
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Pieder_ferb.RenderModel();
+
+
+		//---------------FERB pierna izquierda---------
+		model = modelaux;
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		Pieizq_ferb.RenderModel();
 
 		//---------------Banca---------
 		model = glm::mat4(1.0);
@@ -1864,6 +2130,25 @@ int main()
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Hamburguesa_M.RenderModel();
 
+		//--------------- Humo del puesto de hamburguesas ---------
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		model = glm::mat4(1.0);
+		model = glm::translate(model, glm::vec3(-422.45, humoHeight, -433.0f)); // Misma posición que el puesto
+		model = glm::scale(model, glm::vec3(humoScale, humoScale, humoScale));
+		model = glm::rotate(model, (float)glfwGetTime() * 0.5f, glm::vec3(0.0f, 1.0f, 0.0f)); // Rotación lenta
+
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniform1f(uniformSpecularIntensity, 0.1f); // Bajo brillo
+		glUniform1f(uniformShininess, 4.0f);
+
+		HumoTexture.UseTexture();
+		meshList[3]->RenderMesh(); // Usa el mesh de vegetación que ya tienes
+
+
+		glDisable(GL_BLEND);
+
 		//---------------Mesa de Hamburguesa---------
 		model = glm::mat4(1.0);
 		model = glm::translate(model, glm::vec3(-370.0, 0.0f, -420.0f));
@@ -1898,76 +2183,96 @@ int main()
 		model = glm::rotate(model, -90 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Puesto_dados.RenderModel();
+		
 
 		//--------------- Dado1---------
-		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(-113.755f, 0.0f, -400.0f));
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, posDado1); // Posición FIJA
+
+		if (mainWindow.animacionDadosActiva) {
+			float angulo = animTimeDados * velocidadRotacion;
+			model = glm::rotate(model, angulo * toRadians, glm::vec3(0.0f, 1.0f, 0.0f)); // Solo rotar en Y
+		}
+		else {
+			model = glm::rotate(model, rotFinalDado1.y * toRadians, glm::vec3(0.0f, 1.0f, 0.0f)); // Rotación final en Y
+		}
 
 		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Dado1_M.RenderModel();
+
 		//--------------- Dado2---------
-		model = glm::mat4(1.0);
-		model = glm::translate(model, glm::vec3(-113.755f, 0.0f, -400.0f));
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, posDado2); // Posición FIJA
+
+		if (mainWindow.animacionDadosActiva) {
+			float angulo = animTimeDados * velocidadRotacion * 1.2f;
+			model = glm::rotate(model, angulo * toRadians, glm::vec3(0.0f, 1.0f, 0.0f)); // Solo rotar en Y
+		}
+		else {
+			model = glm::rotate(model, rotFinalDado2.y * toRadians, glm::vec3(0.0f, 1.0f, 0.0f)); // Rotación final en Y
+		}
 
 		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Dado2_M.RenderModel();
 
 
-		// Renderizado del Doctor en movimiento
+		//--------------- Doctor---------
 		model = glm::mat4(1.0);
-		// Posición inicial + desplazamiento en Z (ajusta los valores iniciales según necesites)
 		model = glm::translate(model, glm::vec3(-420.0f, 3.0f, -430.0f + distanciaRecorrida));
 		model = glm::scale(model, glm::vec3(10.0f, 10.0f, 10.0f));
+		model = glm::rotate(model, rotacionPersonajes * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		// Rotación inicial + balanceo al caminar
-		model = glm::rotate(model, (90.0f + sin(faseDoctor) * 3.0f) * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, (90.0f + sin(faseDoctor) ) * 5.0f *toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+	
 		modelaux = model;
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Cuerpo_Doctor.RenderModel();
 
-		// Piernas del Doctor
+		//--------------- Piernas_Doctor---------
 		model = modelaux;
-		model = glm::translate(model, glm::vec3(-0.5f, -1.0f, sin(faseDoctor) * amplitudPiernasDoctor));
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, (sin(faseDoctor) * amplitudPiernasDoctor)));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		PiernaDerecha_Doc.RenderModel();
 
 		model = modelaux;
-		model = glm::translate(model, glm::vec3(0.5f, -1.0f, sin(faseDoctor + glm::pi<float>()) * amplitudPiernasDoctor));
+		model = glm::translate(model, glm::vec3( 0.0f, 0.0f, sin(faseDoctor + glm::pi<float>()) * amplitudPiernasDoctor));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		PiernaIzquierda_Doc.RenderModel();
 
-		// Renderizado de Perry en movimiento (siguiendo al Doctor)
+		//--------------- Perry---------
 		model = glm::mat4(1.0);
-		// Perry se mueve paralelo al Doctor pero con offset
 		model = glm::translate(model, glm::vec3(-313.0f, 4.0f, -415.0f + distanciaRecorrida));
 		model = glm::scale(model, glm::vec3(3.0f, 3.0f, 3.0f));
+		model = glm::rotate(model, rotacionPersonajes * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		// Rotación con balanceo
 		model = glm::rotate(model, sin(fasePerry) * 5.0f * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		modelaux = model;
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		Cuerpo_Perry.RenderModel();
 
-		// Extremidades de Perry
+		//--------------- Extremidades_perry---------
 		model = modelaux;
-		model = glm::translate(model, glm::vec3(-0.3f, -0.8f, sin(fasePerry) * amplitudPiernasPerry));
+		model = glm::translate(model, glm::vec3(-0.0f, 0.0f, sin(fasePerry) * amplitudPiernasPerry));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		PiernaD_Perry.RenderModel();
 
 		model = modelaux;
-		model = glm::translate(model, glm::vec3(0.3f, -0.8f, sin(fasePerry + glm::pi<float>()) * amplitudPiernasPerry));
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, sin(fasePerry + glm::pi<float>()) * amplitudPiernasPerry));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		PiernaI_Perry.RenderModel();
 
 		model = modelaux;
-		model = glm::translate(model, glm::vec3(0.4f, 1.2f, sin(fasePerry + glm::pi<float>()) * amplitudBrazosPerry));
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, sin(fasePerry + glm::pi<float>()) * amplitudBrazosPerry));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		BrazoI_Perry.RenderModel();
 
 		model = modelaux;
-		model = glm::translate(model, glm::vec3(-0.4f, 1.2f, sin(fasePerry) * amplitudBrazosPerry));
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, sin(fasePerry) * amplitudBrazosPerry));
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		BrazoD_Perry.RenderModel();
+
 
 		
 
